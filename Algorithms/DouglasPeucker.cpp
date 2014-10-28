@@ -174,7 +174,7 @@ void DouglasPeucker::Run(RandomAccessIt begin, RandomAccessIt end, const unsigne
             {
                 recursion_stack.emplace(pair.first, farthest_entry_it);
             }
-            if (1 < std::distance(pair.second, farthest_entry_it))
+            if (1 < std::distance(farthest_entry_it, pair.second))
             {
                 recursion_stack.emplace(farthest_entry_it, pair.second);
             }
