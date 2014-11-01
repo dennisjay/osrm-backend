@@ -96,10 +96,10 @@ for (unsigned i = 0; i < max_locations; ++i)
     BOOST_ASSERT(phantom_node_vector[i].front().isValid(facade->GetNumberOfNodes()));
 }
 
-// TIMER_START(distance_table);
+TIMER_START(poi_distance_table);
 std::shared_ptr<std::vector<EdgeWeight>> result_table =
-search_engine_ptr->distance_table(phantom_node_vector);
-// TIMER_STOP(distance_table);
+search_engine_ptr->poi_distance_table(phantom_node_vector[0].front(), 5000);
+TIMER_STOP(poi_distance_table);
 
 if (!result_table)
 {

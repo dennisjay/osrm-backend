@@ -426,9 +426,9 @@ template <class EdgeDataT> class SharedDataFacade : public BaseDataFacade<EdgeDa
 
     std::string GetTimestamp() const final { return m_timestamp; }
 
-    virtual std::vector<unsigned> GetPoisNodeIdsList() const final
+    virtual std::vector<PhantomNode> GetPoisPhantomNodeList() const final
     {
-        return std::vector<unsigned> () ; // TODO implement
+        return std::vector<PhantomNode> () ; // TODO implement
     }
 };
 

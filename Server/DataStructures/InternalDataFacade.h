@@ -63,7 +63,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
     QueryGraph *m_query_graph;
     std::string m_timestamp;
     
-    ShM<NodeID, false>::vector poi_list;
+    ShM<PhantomNode, false>::vector poi_list;
     std::shared_ptr<ShM<FixedPointCoordinate, false>::vector> m_coordinate_list;
     ShM<NodeID, false>::vector m_via_node_list;
     ShM<unsigned, false>::vector m_name_ID_list;
@@ -249,7 +249,15 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
             input_stream.read((char *)&current_node, sizeof(ExternalMemoryNode));
             if (current_node.poi)
             {
-                poi_list.emplace_back(i);
+                std::vector<PhantomNode> phantom_node ;
+                FixedPointCoordinate coord(current_node.lat, current_node.lon) ;
+                IncrementalFindPhantomNodeForCoordinate(coord,
+                                                        phantom_node,
+                                                        19,
+                                                        1);
+                
+                poi_list.emplace_back(phantom_node[0]) ;
+                
             }
         }
         
@@ -257,7 +265,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         poi_list.shrink_to_fit();
         
         
-        SimpleLogger().Write() << "nodes in osrm file" << n;
+        SimpleLogger().Write() << "nodes in osrm file: " << poi_list.size();
         
     }
 
@@ -493,7 +501,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
             result_nodes.begin(), m_geometry_list.begin() + begin, m_geometry_list.begin() + end);
     }
 
-    virtual std::vector<unsigned> GetPoisNodeIdsList() const final
+    virtual std::vector<PhantomNode> GetPoisPhantomNodeList() const final
     {
         return poi_list;
     }
