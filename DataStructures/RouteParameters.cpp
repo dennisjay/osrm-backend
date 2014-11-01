@@ -1,3 +1,4 @@
+
 /*
 
 Copyright (c) 2013, Project OSRM, Dennis Luxen, others
@@ -33,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 RouteParameters::RouteParameters()
     : zoom_level(18), print_instructions(false), alternate_route(true), geometry(true),
-      compression(true), deprecatedAPI(false), uturn_default(false), check_sum(-1), num_results(1)
+compression(true), deprecatedAPI(false), uturn_default(false), check_sum(-1), num_results(1), distance_limit(std::numeric_limits<unsigned>::max())
 {
 }
 
@@ -115,3 +116,6 @@ RouteParameters::addCoordinate(const boost::fusion::vector<double, double> &tran
         static_cast<int>(COORDINATE_PRECISION * boost::fusion::at_c<0>(transmitted_coordinates)),
         static_cast<int>(COORDINATE_PRECISION * boost::fusion::at_c<1>(transmitted_coordinates)));
 }
+
+void
+RouteParameters::setDistanceLimit( const unsigned dlimit ) { distance_limit = dlimit; }

@@ -71,6 +71,8 @@ struct RouteParameters
 
     void addCoordinate(const boost::fusion::vector<double, double> &coordinates);
 
+    void setDistanceLimit( unsigned distance_limit );
+    
     short zoom_level;
     bool print_instructions;
     bool alternate_route;
@@ -87,6 +89,7 @@ struct RouteParameters
     std::vector<std::string> hints;
     std::vector<bool> uturns;
     std::vector<FixedPointCoordinate> coordinates;
+    unsigned distance_limit ;
 };
 
 #endif // ROUTE_PARAMETERS_H

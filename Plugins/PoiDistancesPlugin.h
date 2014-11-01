@@ -37,6 +37,7 @@ public:
     explicit PoiDistancesPlugin(DataFacadeT *facade) : descriptor_string("poitable"), facade(facade)
     {
         search_engine_ptr = osrm::make_unique<SearchEngine<DataFacadeT>>(facade);
+        search_engine_ptr->poi_distance_table.initBackwardRouting()  ;
     }
     
     virtual ~PoiDistancesPlugin() {}
@@ -95,24 +96,33 @@ for (unsigned i = 0; i < max_locations; ++i)
     BOOST_ASSERT(phantom_node_vector[i].front().isValid(facade->GetNumberOfNodes()));
 }
 
+SimpleLogger().Write() << "query with distance limit " << route_parameters.distance_limit ;
+
 TIMER_START(poi_distance_table);
 std::shared_ptr<std::unordered_map<NodeID, EdgeWeight>> result_table =
-search_engine_ptr->poi_distance_table(phantom_node_vector[0].front(), 5000);
+search_engine_ptr->poi_distance_table(phantom_node_vector[0].front(), route_parameters.distance_limit);
 TIMER_STOP(poi_distance_table);
+SimpleLogger().Write() << "poi query, after " << TIMER_MSEC(poi_distance_table) << "ms";
 
 if (!result_table)
 {
     reply = http::Reply::StockReply(http::Reply::badRequest);
     return;
 }
+
+FixedPointCoordinate sourceLoc = phantom_node_vector[0].front().location ;
 JSON::Object json_object;
 JSON::Array json_array;
 for ( PhantomNode pnode : facade->GetPoisPhantomNodeList() )
 {
     if( result_table->find( pnode.forward_node_id) != result_table->end() ) {
         JSON::Object row;
-        row.values["node_id"] = pnode.info_osm_id ;
-        row.values["distance"] = (*result_table)[pnode.forward_node_id] ;
+        row.values["lat"] = pnode.location.lat / COORDINATE_PRECISION ;
+        row.values["lon"] = pnode.location.lon / COORDINATE_PRECISION;
+        row.values["osm_id"] = pnode.info_osm_id ;
+        row.values["distance_car"] = (*result_table)[pnode.forward_node_id] ;
+        row.values["distance_air"] = FixedPointCoordinate::ApproximateDistance(sourceLoc, pnode.location) ;
+
         json_array.values.push_back(row);
     }
 }

@@ -49,7 +49,14 @@ public:
     OneToAllPoiRouting(DataFacadeT *facade, SearchEngineData &engine_working_data)
     : super(facade), engine_working_data(engine_working_data)
     {
-        poi_vector = facade->GetPoisPhantomNodeList() ;
+       
+    }
+    
+    ~OneToAllPoiRouting() {}
+    
+    
+    void initBackwardRouting() {
+        poi_vector = super::facade->GetPoisPhantomNodeList() ;
         SimpleLogger().Write() << "loaded pois to Routing class";
         
         engine_working_data.InitializeOrClearFirstThreadLocalStorage(super::facade->GetNumberOfNodes());
@@ -67,14 +74,14 @@ public:
             if (SPECIAL_NODEID != phantom_node.forward_node_id)
             {
                 query_heap.Insert(phantom_node.forward_node_id,
-                                    phantom_node.GetForwardWeightPlusOffset(),
-                                    phantom_node.forward_node_id);
+                                  phantom_node.GetForwardWeightPlusOffset(),
+                                  phantom_node.forward_node_id);
             }
             if (SPECIAL_NODEID != phantom_node.reverse_node_id)
             {
                 query_heap.Insert(phantom_node.reverse_node_id,
-                                    phantom_node.GetReverseWeightPlusOffset(),
-                                    phantom_node.reverse_node_id);
+                                  phantom_node.GetReverseWeightPlusOffset(),
+                                  phantom_node.reverse_node_id);
             }
             
             // explore search space
@@ -87,12 +94,9 @@ public:
         SimpleLogger().Write() << "ok, after " << TIMER_SEC(poi_backward_searches) << "s";
         
         SimpleLogger().Write() << "Bucket size: " << search_space_with_buckets.size() ;
-        
     }
     
-    ~OneToAllPoiRouting() {}
-    
-    std::shared_ptr<std::unordered_map<NodeID, EdgeWeight>> operator()(const PhantomNode &phantom_node, int distance)
+    std::shared_ptr<std::unordered_map<NodeID, EdgeWeight>> operator()(const PhantomNode &phantom_node, unsigned distance_limit)
     const
     {
         const unsigned number_of_locations = static_cast<unsigned>(poi_vector.size() + 1);
@@ -112,7 +116,7 @@ public:
         // explore search space
         while (!query_heap.Empty())
         {
-            ForwardRoutingStep(source_id,
+            ForwardRoutingStep(distance_limit, source_id,
                                 number_of_locations,
                                 query_heap,
                                 search_space_with_buckets,
@@ -126,7 +130,8 @@ public:
     
     
     
-    void ForwardRoutingStep(const unsigned source_id,
+    void ForwardRoutingStep(const unsigned distance_limit,
+                            const unsigned source_id,
                             const unsigned number_of_locations,
                             QueryHeap &query_heap,
                             const SearchSpaceWithBuckets &search_space_with_buckets,
@@ -152,8 +157,10 @@ public:
                 const EdgeWeight new_distance = source_distance + target_distance;
                 if (new_distance >= 0 && new_distance < current_distance)
                 {
-                    (*result_table)[target_node] =
-                    (source_distance + target_distance);
+                    if( (source_distance + target_distance) <= distance_limit ) {
+                        (*result_table)[target_node] =
+                        (source_distance + target_distance);
+                    }
                 }
             }
         }
@@ -161,6 +168,7 @@ public:
         {
             return;
         }
+        
         RelaxOutgoingEdges<true>(node, source_distance, query_heap);
     }
     
