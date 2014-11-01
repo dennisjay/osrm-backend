@@ -445,7 +445,7 @@ void ExtractionContainers::PrepareData(const std::string &output_file_name,
         }
         poi_file_stream.close();
         TIMER_STOP(write_poi_index);
-        std::cout << "ok, after " << TIMER_SEC(write_name_index) << "s" << std::endl;
+        std::cout << "ok, after " << TIMER_SEC(write_poi_index) << "s" << std::endl;
 
         
         
