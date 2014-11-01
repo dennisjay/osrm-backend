@@ -62,4 +62,5 @@ void ImportNode::Clear()
     node_id = 0;
     bollard = false;
     trafficLight = false;
+    poi = false;
 }

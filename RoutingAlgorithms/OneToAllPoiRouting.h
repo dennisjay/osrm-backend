@@ -42,6 +42,8 @@ public:
     OneToAllPoiRouting(DataFacadeT *facade, SearchEngineData &engine_working_data)
     : super(facade), engine_working_data(engine_working_data)
     {
+        //facade->
+        
     }
     
     ~OneToAllPoiRouting() {}

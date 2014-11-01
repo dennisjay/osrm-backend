@@ -143,6 +143,7 @@ int Prepare::Process(int argc, char *argv[])
                                       edge_list,
                                       barrier_node_list,
                                       traffic_light_list,
+                                      poi_list,
                                       &internal_to_external_node_map,
                                       restriction_list);
     input_stream.close();
@@ -155,7 +156,8 @@ int Prepare::Process(int argc, char *argv[])
 
     SimpleLogger().Write() << restriction_list.size() << " restrictions, "
                            << barrier_node_list.size() << " bollard nodes, "
-                           << traffic_light_list.size() << " traffic lights";
+                           << traffic_light_list.size() << " traffic lights, "
+                           << poi_list.size() << " pois";
 
     std::vector<EdgeBasedNode> node_based_edge_list;
     unsigned number_of_edge_based_nodes = 0;

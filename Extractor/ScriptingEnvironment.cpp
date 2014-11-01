@@ -68,6 +68,7 @@ void ScriptingEnvironment::initLuaState(lua_State* lua_state)
         .def_readwrite("lat", &ImportNode::lat)
         .def_readwrite("lon", &ImportNode::lon)
         .def_readonly("id", &ImportNode::node_id)
+        .def_readwrite("poi", &ImportNode::poi)
         .def_readwrite("bollard", &ImportNode::bollard)
         .def_readwrite("traffic_light", &ImportNode::trafficLight)
         .def_readwrite("tags", &ImportNode::keyVals),

@@ -57,6 +57,7 @@ NodeID readBinaryOSRMGraphFromStream(std::istream &input_stream,
                                      std::vector<EdgeT> &edge_list,
                                      std::vector<NodeID> &barrier_node_list,
                                      std::vector<NodeID> &traffic_light_node_list,
+                                     std::vector<NodeID> &poi_node_list,
                                      std::vector<NodeInfo> *int_to_ext_node_id_map,
                                      std::vector<TurnRestriction> &restriction_list)
 {
@@ -89,6 +90,10 @@ NodeID readBinaryOSRMGraphFromStream(std::istream &input_stream,
         if (current_node.trafficLight)
         {
             traffic_light_node_list.emplace_back(i);
+        }
+        if (current_node.poi)
+        {
+            poi_node_list.emplace_back(i);
         }
     }
 
