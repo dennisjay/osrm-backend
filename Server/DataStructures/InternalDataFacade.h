@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "BaseDataFacade.h"
 
+#include "../../DataStructures/ImportEdge.h"
 #include "../../DataStructures/OriginalEdgeData.h"
 #include "../../DataStructures/QueryNode.h"
 #include "../../DataStructures/QueryEdge.h"
@@ -40,8 +41,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../DataStructures/StaticRTree.h"
 #include "../../DataStructures/RangeTable.h"
 #include "../../Util/BoostFileSystemFix.h"
-#include "../../Util/GraphLoader.h"
 #include "../../Util/ProgramOptions.h"
+#include "../../Util/GraphLoader.h"
 #include "../../Util/simple_logger.hpp"
 
 #include <osrm/Coordinate.h>
@@ -61,7 +62,8 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
     unsigned m_number_of_nodes;
     QueryGraph *m_query_graph;
     std::string m_timestamp;
-
+    
+    ShM<NodeID, false>::vector poi_list;
     std::shared_ptr<ShM<FixedPointCoordinate, false>::vector> m_coordinate_list;
     ShM<NodeID, false>::vector m_via_node_list;
     ShM<unsigned, false>::vector m_name_ID_list;
@@ -222,6 +224,42 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         }
         name_stream.close();
     }
+    
+    void LoadNodePoiList(const boost::filesystem::path &osrmFile) {
+        SimpleLogger().Write() << "Loading osrm File ";
+
+        boost::filesystem::ifstream input_stream(osrmFile, std::ios::binary);
+        
+        const FingerPrint fingerprint_orig;
+        FingerPrint fingerprint_loaded;
+        input_stream.read((char *)&fingerprint_loaded, sizeof(FingerPrint));
+        
+        if (!fingerprint_loaded.TestGraphUtil(fingerprint_orig))
+        {
+            SimpleLogger().Write(logWARNING) << ".osrm was prepared with different build.\n"
+            "Reprocess to get rid of this warning.";
+        }
+        
+        NodeID n;
+        input_stream.read((char *)&n, sizeof(NodeID));
+        SimpleLogger().Write() << "Importing n = " << n << " nodes ";
+        ExternalMemoryNode current_node;
+        for (NodeID i = 0; i < n; ++i)
+        {
+            input_stream.read((char *)&current_node, sizeof(ExternalMemoryNode));
+            if (current_node.poi)
+            {
+                poi_list.emplace_back(i);
+            }
+        }
+        
+        // tighten vector sizes
+        poi_list.shrink_to_fit();
+        
+        
+        SimpleLogger().Write() << "nodes in osrm file" << n;
+        
+    }
 
   public:
     virtual ~InternalDataFacade()
@@ -262,7 +300,11 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
             throw OSRMException("no names file given in ini file");
         }
 
-        ServerPaths::const_iterator paths_iterator = server_paths.find("hsgrdata");
+        
+        ServerPaths::const_iterator paths_iterator = server_paths.find("osrm");
+        BOOST_ASSERT(server_paths.end() != paths_iterator);
+        const boost::filesystem::path &osrm_data_path = paths_iterator->second;
+        paths_iterator = server_paths.find("hsgrdata");
         BOOST_ASSERT(server_paths.end() != paths_iterator);
         const boost::filesystem::path &hsgr_path = paths_iterator->second;
         paths_iterator = server_paths.find("timestamp");
@@ -306,6 +348,10 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         SimpleLogger().Write() << "loading street names";
         AssertPathExists(names_data_path);
         LoadStreetNames(names_data_path);
+        SimpleLogger().Write() << "loading pois" ;
+        AssertPathExists(osrm_data_path);
+        LoadNodePoiList(osrm_data_path) ;
+        SimpleLogger().Write() << "done number of pois" << poi_list.size() ;
     }
 
     // search graph access
@@ -445,6 +491,11 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         result_nodes.clear();
         result_nodes.insert(
             result_nodes.begin(), m_geometry_list.begin() + begin, m_geometry_list.begin() + end);
+    }
+
+    virtual std::vector<unsigned> GetPoisNodeIdsList() const final
+    {
+        return poi_list;
     }
 
     std::string GetTimestamp() const final { return m_timestamp; }

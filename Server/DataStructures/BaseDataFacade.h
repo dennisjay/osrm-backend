@@ -107,7 +107,7 @@ template <class EdgeDataT> class BaseDataFacade
                                             std::vector<PhantomNode> &resulting_phantom_node_vector,
                                             const unsigned zoom_level,
                                             const unsigned number_of_results) = 0;
-
+    
     virtual unsigned GetCheckSum() const = 0;
 
     virtual unsigned GetNameIndexFromEdgeID(const unsigned id) const = 0;
@@ -122,6 +122,8 @@ template <class EdgeDataT> class BaseDataFacade
     }
 
     virtual std::string GetTimestamp() const = 0;
+    
+    virtual std::vector<unsigned> GetPoisNodeIdsList() const = 0 ;
 };
 
 #endif // BASE_DATA_FACADE_H

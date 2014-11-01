@@ -74,6 +74,7 @@ file(GLOB DataStructureTestsGlob UnitTests/DataStructures/*.cpp DataStructures/H
 
 set(
   OSRMSources
+  ${ImporterGlob}
   ${LibOSRMGlob}
   ${DescriptorGlob}
   ${DatastructureGlob}
