@@ -423,6 +423,32 @@ void ExtractionContainers::PrepareData(const std::string &output_file_name,
         TIMER_STOP(write_name_index);
         std::cout << "ok, after " << TIMER_SEC(write_name_index) << "s" << std::endl;
 
+        std::cout << "[extractor] writing poi index ... " << std::flush;
+        TIMER_START(write_poi_index);
+        name_file_streamName = (output_file_name + ".poi");
+        boost::filesystem::ofstream poi_file_stream(name_file_streamName, std::ios::binary);
+        
+        total_length = 0;
+        for (auto node : all_nodes_list )
+        {
+            if( node.poi ) total_length++ ;
+        }
+        
+        poi_file_stream.write((char *)&fingerprint, sizeof(FingerPrint));
+        poi_file_stream.write((char*) &total_length, sizeof(unsigned));
+        // write all chars consecutively
+        for (auto node : all_nodes_list )
+        {
+            if( node.poi ) {
+                poi_file_stream.write((char *)&(node), sizeof(ExternalMemoryNode));
+            }
+        }
+        poi_file_stream.close();
+        TIMER_STOP(write_poi_index);
+        std::cout << "ok, after " << TIMER_SEC(write_name_index) << "s" << std::endl;
+
+        
+        
         SimpleLogger().Write() << "Processed " << number_of_used_nodes << " nodes and "
                                << number_of_used_edges << " edges";
     }

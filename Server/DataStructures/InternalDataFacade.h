@@ -225,10 +225,10 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         name_stream.close();
     }
     
-    void LoadNodePoiList(const boost::filesystem::path &osrmFile) {
-        SimpleLogger().Write() << "Loading osrm File ";
+    void LoadNodePoiList(const boost::filesystem::path &poiFile) {
+        SimpleLogger().Write() << "Loading poi File ";
 
-        boost::filesystem::ifstream input_stream(osrmFile, std::ios::binary);
+        boost::filesystem::ifstream input_stream(poiFile, std::ios::binary);
         
         const FingerPrint fingerprint_orig;
         FingerPrint fingerprint_loaded;
@@ -266,7 +266,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         poi_list.shrink_to_fit();
         
         
-        SimpleLogger().Write() << "nodes in osrm file: " << poi_list.size();
+        SimpleLogger().Write() << "nodes in poi file: " << poi_list.size();
         
     }
 
@@ -310,9 +310,9 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         }
 
         
-        ServerPaths::const_iterator paths_iterator = server_paths.find("osrm");
+        ServerPaths::const_iterator paths_iterator = server_paths.find("poi");
         BOOST_ASSERT(server_paths.end() != paths_iterator);
-        const boost::filesystem::path &osrm_data_path = paths_iterator->second;
+        const boost::filesystem::path &poi_data_path = paths_iterator->second;
         paths_iterator = server_paths.find("hsgrdata");
         BOOST_ASSERT(server_paths.end() != paths_iterator);
         const boost::filesystem::path &hsgr_path = paths_iterator->second;
@@ -358,8 +358,8 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         AssertPathExists(names_data_path);
         LoadStreetNames(names_data_path);
         SimpleLogger().Write() << "loading pois" ;
-        AssertPathExists(osrm_data_path);
-        LoadNodePoiList(osrm_data_path) ;
+        AssertPathExists(poi_data_path);
+        LoadNodePoiList(poi_data_path) ;
         SimpleLogger().Write() << "done number of pois" << poi_list.size() ;
     }
 

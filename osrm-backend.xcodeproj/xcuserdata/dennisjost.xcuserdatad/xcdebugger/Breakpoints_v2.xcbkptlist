@@ -15,7 +15,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "241"
             endingLineNumber = "241"
-            landmarkName = "LoadNodePoiList(const boost::filesystem::path &amp;osrmFile)"
+            landmarkName = "LoadNodePoiList(const boost::filesystem::path &amp;poiFile)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
