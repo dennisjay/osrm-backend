@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 struct ExternalMemoryNode : NodeInfo
 {
-    ExternalMemoryNode(int lat, int lon, unsigned int id, bool bollard, bool traffic_light);
+    ExternalMemoryNode(int lat, int lon, unsigned int id, bool bollard, bool traffic_light, bool poi);
 
     ExternalMemoryNode();
 
@@ -45,6 +45,7 @@ struct ExternalMemoryNode : NodeInfo
 
     bool bollard;
     bool trafficLight;
+    bool poi ;
 };
 
 struct ImportNode : public ExternalMemoryNode

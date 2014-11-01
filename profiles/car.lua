@@ -194,6 +194,9 @@ end
 function node_function (node)
   local access = find_access_tag(node, access_tags_hierachy)
 
+  --flag nodes that contai poi data
+node.poi = node.tags:Holds("amenity") ;
+
   --flag node if it carries a traffic light
   if node.tags:Holds("highway") then
     if node.tags:Find("highway") == "traffic_signals" then
