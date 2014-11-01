@@ -124,6 +124,7 @@ template <class EdgeDataT> class BaseDataFacade
     virtual std::string GetTimestamp() const = 0;
     
     virtual std::vector<PhantomNode> GetPoisPhantomNodeList() const = 0 ;
+    
 };
 
 #endif // BASE_DATA_FACADE_H

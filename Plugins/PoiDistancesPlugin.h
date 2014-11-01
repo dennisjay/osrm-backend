@@ -46,7 +46,7 @@ public:
 void HandleRequest(const RouteParameters &route_parameters, http::Reply &reply) final
 {
 // check number of parameters
-if (2 > route_parameters.coordinates.size())
+if (1 != route_parameters.coordinates.size())
 {
     reply = http::Reply::StockReply(http::Reply::badRequest);
     return;
@@ -72,8 +72,7 @@ for (const FixedPointCoordinate &coordinate : route_parameters.coordinates)
 }
 
 const bool checksum_OK = (route_parameters.check_sum == raw_route.check_sum);
-unsigned max_locations =
-std::min(100u, static_cast<unsigned>(raw_route.raw_via_node_coordinates.size()));
+unsigned max_locations = 1;
 PhantomNodeArray phantom_node_vector(max_locations);
 for (unsigned i = 0; i < max_locations; ++i)
 {
@@ -97,7 +96,7 @@ for (unsigned i = 0; i < max_locations; ++i)
 }
 
 TIMER_START(poi_distance_table);
-std::shared_ptr<std::vector<EdgeWeight>> result_table =
+std::shared_ptr<std::unordered_map<NodeID, EdgeWeight>> result_table =
 search_engine_ptr->poi_distance_table(phantom_node_vector[0].front(), 5000);
 TIMER_STOP(poi_distance_table);
 
@@ -108,14 +107,14 @@ if (!result_table)
 }
 JSON::Object json_object;
 JSON::Array json_array;
-const unsigned number_of_locations = static_cast<unsigned>(phantom_node_vector.size());
-for (unsigned row = 0; row < number_of_locations; ++row)
+for ( PhantomNode pnode : facade->GetPoisPhantomNodeList() )
 {
-    JSON::Array json_row;
-    auto row_begin_iterator = result_table->begin() + (row * number_of_locations);
-    auto row_end_iterator = result_table->begin() + ((row + 1) * number_of_locations);
-    json_row.values.insert(json_row.values.end(), row_begin_iterator, row_end_iterator);
-    json_array.values.push_back(json_row);
+    if( result_table->find( pnode.forward_node_id) != result_table->end() ) {
+        JSON::Object row;
+        row.values["node_id"] = pnode.info_osm_id ;
+        row.values["distance"] = (*result_table)[pnode.forward_node_id] ;
+        json_array.values.push_back(row);
+    }
 }
 json_object.values["distance_table"] = json_array;
 JSON::render(reply.content, json_object);

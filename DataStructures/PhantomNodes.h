@@ -82,6 +82,8 @@ struct PhantomNode
     unsigned short fwd_segment_position;
     TravelMode forward_travel_mode : 4;
     TravelMode backward_travel_mode : 4;
+    
+    NodeID info_osm_id ;
 
     int GetForwardWeightPlusOffset() const
     {

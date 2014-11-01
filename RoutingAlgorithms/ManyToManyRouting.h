@@ -39,24 +39,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unordered_map>
 #include <vector>
 
-struct NodeBucket
-{
-    unsigned target_id; // essentially a row in the distance matrix
-    EdgeWeight distance;
-    NodeBucket(const unsigned target_id, const EdgeWeight distance)
-    : target_id(target_id), distance(distance)
-    {
-    }
-};
 
 template <class DataFacadeT> class ManyToManyRouting final : public BasicRoutingInterface<DataFacadeT>
 {
+    struct NodeBucket
+    {
+        unsigned target_id; // essentially a row in the distance matrix
+        EdgeWeight distance;
+        NodeBucket(const unsigned target_id, const EdgeWeight distance)
+        : target_id(target_id), distance(distance)
+        {
+        }
+    };
+    
     using super = BasicRoutingInterface<DataFacadeT>;
     using QueryHeap = SearchEngineData::QueryHeap;
     SearchEngineData &engine_working_data;
 
     using SearchSpaceWithBuckets = std::unordered_map<NodeID, std::vector<NodeBucket>>;
-
+    
   public:
     ManyToManyRouting(DataFacadeT *facade, SearchEngineData &engine_working_data)
         : super(facade), engine_working_data(engine_working_data)

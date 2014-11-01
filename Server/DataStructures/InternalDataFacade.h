@@ -256,6 +256,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
                                                         19,
                                                         1);
                 
+                phantom_node[0].info_osm_id = current_node.node_id ;
                 poi_list.emplace_back(phantom_node[0]) ;
                 
             }
