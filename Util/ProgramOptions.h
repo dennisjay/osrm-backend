@@ -57,7 +57,7 @@ inline void populate_base_path(ServerPaths &server_paths)
         SimpleLogger().Write() << "populating base path: " << base_string;
 
         server_paths["poi"] = base_string + ".poi";
-        BOOST_ASSERT(server_paths.find("osrm") != server_paths.end());
+        BOOST_ASSERT(server_paths.find("poi") != server_paths.end());
         server_paths["hsgrdata"] = base_string + ".hsgr";
         BOOST_ASSERT(server_paths.find("hsgrdata") != server_paths.end());
         server_paths["nodesdata"] = base_string + ".nodes";

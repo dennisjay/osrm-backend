@@ -547,11 +547,11 @@
 				D7A111781A04863400920B6B /* Plugins */,
 				D7A111801A04863500920B6B /* prepare.cpp */,
 				D7A111811A04863500920B6B /* car.lua */,
-				D7A111821A04863500920B6B /* profiles */,
 				D7A1118D1A04863500920B6B /* Rakefile */,
 				D7A1118E1A04863500920B6B /* README.md */,
 				D7A1118F1A04863500920B6B /* routed.cpp */,
 				D7A111901A04863500920B6B /* RoutingAlgorithms */,
+				D7A111821A04863500920B6B /* profiles */,
 				D7A111951A04863500920B6B /* Server */,
 				D7A111A81A04863500920B6B /* taginfo.json */,
 				D7A111A91A04863500920B6B /* test */,
@@ -1872,6 +1872,7 @@
 				D7A10F8B1A04859600920B6B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

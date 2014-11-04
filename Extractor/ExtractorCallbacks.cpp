@@ -51,6 +51,9 @@ void ExtractorCallbacks::ProcessNode(const ExternalMemoryNode &n)
     if (n.lat <= 85 * COORDINATE_PRECISION && n.lat >= -85 * COORDINATE_PRECISION)
     {
         external_memory.all_nodes_list.push_back(n);
+        if( n.poi ) {
+            external_memory.used_node_id_list.push_back(n.node_id) ; //TODO check this: add poi nodes as used
+        }
     }
 }
 

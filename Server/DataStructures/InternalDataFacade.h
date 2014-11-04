@@ -46,6 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../Util/simple_logger.hpp"
 
 #include <osrm/Coordinate.h>
+#include <unordered_map>
 
 template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<EdgeDataT>
 {
@@ -64,6 +65,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
     std::string m_timestamp;
     
     ShM<PhantomNode, false>::vector poi_list;
+    std::unordered_map<NodeID, NodeID> m_external_to_internal_node_id;
     std::shared_ptr<ShM<FixedPointCoordinate, false>::vector> m_coordinate_list;
     ShM<NodeID, false>::vector m_via_node_list;
     ShM<unsigned, false>::vector m_name_ID_list;
@@ -133,10 +135,14 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         nodes_input_stream.read((char *)&number_of_coordinates, sizeof(unsigned));
         m_coordinate_list =
             std::make_shared<std::vector<FixedPointCoordinate>>(number_of_coordinates);
+        m_external_to_internal_node_id = std::unordered_map<NodeID,NodeID>(number_of_coordinates) ;
         for (unsigned i = 0; i < number_of_coordinates; ++i)
         {
             nodes_input_stream.read((char *)&current_node, sizeof(NodeInfo));
+            
             m_coordinate_list->at(i) = FixedPointCoordinate(current_node.lat, current_node.lon);
+            m_external_to_internal_node_id[current_node.node_id] = i;
+            
             BOOST_ASSERT((std::abs(m_coordinate_list->at(i).lat) >> 30) == 0);
             BOOST_ASSERT((std::abs(m_coordinate_list->at(i).lon) >> 30) == 0);
         }
@@ -242,23 +248,34 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         
         NodeID n;
         input_stream.read((char *)&n, sizeof(NodeID));
-        SimpleLogger().Write() << "Importing n = " << n << " nodes ";
+        SimpleLogger().Write() << "Importing n = " << n << " poi ";
+        
         ExternalMemoryNode current_node;
+        PhantomNode phantom_node ;
+        poi_list = ShM<PhantomNode, false>::vector(n) ;
+        
+        
+        SimpleLogger().Write() << "Query graph node count n = " << m_query_graph->GetNumberOfNodes() << " map node n =" << m_external_to_internal_node_id.size() ;
+        BOOST_ASSERT( m_query_graph->GetNumberOfNodes() == m_external_to_internal_node_id.size() ) ;
+
         for (NodeID i = 0; i < n; ++i)
         {
             input_stream.read((char *)&current_node, sizeof(ExternalMemoryNode));
             if (current_node.poi)
             {
-                std::vector<PhantomNode> phantom_node ;
                 FixedPointCoordinate coord(current_node.lat, current_node.lon) ;
-                IncrementalFindPhantomNodeForCoordinate(coord,
-                                                        phantom_node,
-                                                        19,
-                                                        1);
+                auto it = m_external_to_internal_node_id.find(current_node.node_id) ;
+                BOOST_ASSERT( it != m_external_to_internal_node_id.end() ) ;
                 
-                phantom_node[0].info_osm_id = current_node.node_id ;
-                poi_list.emplace_back(phantom_node[0]) ;
-                
+                if( it != m_external_to_internal_node_id.end() ) {
+                    phantom_node.info_osm_id = current_node.node_id ;
+                    BOOST_ASSERT( (*it).second  < m_query_graph->GetNumberOfNodes() ) ;
+                    phantom_node.reverse_node_id = (*it).second ;
+                    phantom_node.forward_node_id = (*it).second ;
+                    phantom_node.location = FixedPointCoordinate(current_node.lat, current_node.lon) ;
+                }
+            
+                poi_list[i] = phantom_node ;
             }
         }
         
@@ -308,7 +325,10 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         {
             throw OSRMException("no names file given in ini file");
         }
-
+        if (server_paths.find("poi") == server_paths.end())
+        {
+            throw OSRMException("no poi file given in ini file");
+        }
         
         ServerPaths::const_iterator paths_iterator = server_paths.find("poi");
         BOOST_ASSERT(server_paths.end() != paths_iterator);

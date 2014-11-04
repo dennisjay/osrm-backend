@@ -70,19 +70,18 @@ public:
         {
             query_heap.Clear();
             // insert target(s) at distance 0
-            
             if (SPECIAL_NODEID != phantom_node.forward_node_id)
             {
                 query_heap.Insert(phantom_node.forward_node_id,
                                   phantom_node.GetForwardWeightPlusOffset(),
                                   phantom_node.forward_node_id);
             }
-            if (SPECIAL_NODEID != phantom_node.reverse_node_id)
+            /*if (SPECIAL_NODEID != phantom_node.reverse_node_id)
             {
                 query_heap.Insert(phantom_node.reverse_node_id,
                                   phantom_node.GetReverseWeightPlusOffset(),
                                   phantom_node.reverse_node_id);
-            }
+            }*/
             
             // explore search space
             while (!query_heap.Empty())
@@ -181,6 +180,8 @@ public:
         // store settled nodes in search space bucket
         search_space_with_buckets[node].emplace_back(target_distance, sourceNode);
         
+        SimpleLogger().Write() << search_space_with_buckets.size() << " " << search_space_with_buckets[node].size() ;
+        
         if (StallAtNode<false>(node, target_distance, query_heap))
         {
             return;
@@ -201,8 +202,6 @@ public:
             {
                 const NodeID to = super::facade->GetTarget(edge);
                 const int edge_weight = data.distance;
-                
-                BOOST_ASSERT_MSG(edge_weight > 0, "edge_weight invalid");
                 const int to_distance = distance + edge_weight;
                 
                 // New Node discovered -> Add to Heap + Node Info Storage
