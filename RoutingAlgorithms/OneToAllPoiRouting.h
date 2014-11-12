@@ -55,15 +55,16 @@ public:
     ~OneToAllPoiRouting() {}
     
     
-    void initBackwardRouting() {
-        poi_vector = super::facade->GetPoisPhantomNodeList() ;
-        SimpleLogger().Write() << "loaded pois to Routing class";
+    void initBackwardRouting(FixedPointCoordinate src) {
+        std::vector<PhantomNode> poi_vector ;
+        super::facade->IncrementalFindPhantomPoiNodeForCoordinate( src, poi_vector, 14, 100 ) ;
         
         engine_working_data.InitializeOrClearFirstThreadLocalStorage(super::facade->GetNumberOfNodes());
         QueryHeap &query_heap = *(engine_working_data.forwardHeap);
         
         
-        SimpleLogger().Write() << "Performing poi backward searches";
+        SimpleLogger().Write() << "Incremental search returend " << poi_vector.size() << " pois ";
+        SimpleLogger().Write() << "Performing poi backward searches ";
         TIMER_START(poi_backward_searches);
         
         for (const PhantomNode &phantom_node: poi_vector)
@@ -76,12 +77,12 @@ public:
                                   phantom_node.GetForwardWeightPlusOffset(),
                                   phantom_node.forward_node_id);
             }
-            /*if (SPECIAL_NODEID != phantom_node.reverse_node_id)
+            if (SPECIAL_NODEID != phantom_node.reverse_node_id)
             {
                 query_heap.Insert(phantom_node.reverse_node_id,
                                   phantom_node.GetReverseWeightPlusOffset(),
                                   phantom_node.reverse_node_id);
-            }*/
+            }
             
             // explore search space
             while (!query_heap.Empty())
@@ -90,7 +91,7 @@ public:
             }
         }
         TIMER_STOP(poi_backward_searches);
-        SimpleLogger().Write() << "ok, after " << TIMER_SEC(poi_backward_searches) << "s";
+        SimpleLogger().Write() << "ok, after " << TIMER_MSEC(poi_backward_searches) << " ms";
         
         SimpleLogger().Write() << "Bucket size: " << search_space_with_buckets.size() ;
     }
@@ -179,8 +180,6 @@ public:
         
         // store settled nodes in search space bucket
         search_space_with_buckets[node].emplace_back(target_distance, sourceNode);
-        
-        SimpleLogger().Write() << search_space_with_buckets.size() << " " << search_space_with_buckets[node].size() ;
         
         if (StallAtNode<false>(node, target_distance, query_heap))
         {

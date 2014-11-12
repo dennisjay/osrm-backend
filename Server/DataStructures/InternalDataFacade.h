@@ -64,7 +64,7 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
     QueryGraph *m_query_graph;
     std::string m_timestamp;
     
-    ShM<PhantomNode, false>::vector poi_list;
+    std::unordered_set<NodeID> poi_node_ids;
     std::unordered_map<NodeID, NodeID> m_external_to_internal_node_id;
     std::shared_ptr<ShM<FixedPointCoordinate, false>::vector> m_coordinate_list;
     ShM<NodeID, false>::vector m_via_node_list;
@@ -208,9 +208,10 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
     void LoadRTree()
     {
         BOOST_ASSERT_MSG(!m_coordinate_list->empty(), "coordinates must be loaded before r-tree");
+        BOOST_ASSERT_MSG(!poi_node_ids.empty(), "pois must be loaded before r-tree");
 
         m_static_rtree.reset(
-            new StaticRTree<RTreeLeaf>(ram_index_path, file_index_path, m_coordinate_list));
+            new StaticRTree<RTreeLeaf>(ram_index_path, file_index_path, m_coordinate_list, poi_node_ids));
     }
 
     void LoadStreetNames(const boost::filesystem::path &names_file)
@@ -252,38 +253,19 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         
         ExternalMemoryNode current_node;
         PhantomNode phantom_node ;
-        poi_list = ShM<PhantomNode, false>::vector(n) ;
+        poi_node_ids = std::unordered_set<NodeID>(n) ;
         
-        
-        SimpleLogger().Write() << "Query graph node count n = " << m_query_graph->GetNumberOfNodes() << " map node n =" << m_external_to_internal_node_id.size() ;
-        BOOST_ASSERT( m_query_graph->GetNumberOfNodes() == m_external_to_internal_node_id.size() ) ;
-
         for (NodeID i = 0; i < n; ++i)
         {
             input_stream.read((char *)&current_node, sizeof(ExternalMemoryNode));
             if (current_node.poi)
             {
-                FixedPointCoordinate coord(current_node.lat, current_node.lon) ;
-                auto it = m_external_to_internal_node_id.find(current_node.node_id) ;
-                BOOST_ASSERT( it != m_external_to_internal_node_id.end() ) ;
-                
-                if( it != m_external_to_internal_node_id.end() ) {
-                    phantom_node.info_osm_id = current_node.node_id ;
-                    BOOST_ASSERT( (*it).second  < m_query_graph->GetNumberOfNodes() ) ;
-                    phantom_node.reverse_node_id = (*it).second ;
-                    phantom_node.forward_node_id = (*it).second ;
-                    phantom_node.location = FixedPointCoordinate(current_node.lat, current_node.lon) ;
-                }
-            
-                poi_list[i] = phantom_node ;
+                poi_node_ids.emplace(m_external_to_internal_node_id[current_node.node_id]) ; //use internal id
             }
         }
         
-        // tighten vector sizes
-        poi_list.shrink_to_fit();
         
-        
-        SimpleLogger().Write() << "nodes in poi file: " << poi_list.size();
+        SimpleLogger().Write() << "nodes in poi file: " << poi_node_ids.size();
         
     }
 
@@ -366,6 +348,10 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         AssertPathExists(nodes_data_path);
         AssertPathExists(edges_data_path);
         LoadNodeAndEdgeInformation(nodes_data_path, edges_data_path);
+        SimpleLogger().Write() << "loading pois" ;
+        AssertPathExists(poi_data_path);
+        LoadNodePoiList(poi_data_path) ;
+        SimpleLogger().Write() << "done number of pois" << poi_node_ids.size() ;
         SimpleLogger().Write() << "loading geometries";
         AssertPathExists(geometries_path);
         LoadGeometries(geometries_path);
@@ -377,10 +363,6 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         SimpleLogger().Write() << "loading street names";
         AssertPathExists(names_data_path);
         LoadStreetNames(names_data_path);
-        SimpleLogger().Write() << "loading pois" ;
-        AssertPathExists(poi_data_path);
-        LoadNodePoiList(poi_data_path) ;
-        SimpleLogger().Write() << "done number of pois" << poi_list.size() ;
     }
 
     // search graph access
@@ -480,6 +462,25 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
             input_coordinate, resulting_phantom_node_vector, zoom_level, number_of_results);
     }
 
+
+
+    virtual bool
+    IncrementalFindPhantomPoiNodeForCoordinate(const FixedPointCoordinate &input_coordinate,
+                                           std::vector<PhantomNode> &resulting_phantom_node_vector,
+                                           const unsigned zoom_level,
+                                           const unsigned number_of_results)
+    {
+        if (!m_static_rtree.get())
+        {
+            LoadRTree();
+        }
+        
+        return m_static_rtree->IncrementalFindPhantomPoiNodeForCoordinate(
+                                                                       input_coordinate, resulting_phantom_node_vector, zoom_level, number_of_results);
+    
+    
+    }
+
     unsigned GetCheckSum() const final { return m_check_sum; }
 
     unsigned GetNameIndexFromEdgeID(const unsigned id) const final
@@ -520,11 +521,6 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
         result_nodes.clear();
         result_nodes.insert(
             result_nodes.begin(), m_geometry_list.begin() + begin, m_geometry_list.begin() + end);
-    }
-
-    virtual std::vector<PhantomNode> GetPoisPhantomNodeList() const final
-    {
-        return poi_list;
     }
 
     std::string GetTimestamp() const final { return m_timestamp; }

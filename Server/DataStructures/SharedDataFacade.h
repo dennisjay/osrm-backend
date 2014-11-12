@@ -398,6 +398,23 @@ template <class EdgeDataT> class SharedDataFacade : public BaseDataFacade<EdgeDa
             input_coordinate, resulting_phantom_node_vector, zoom_level, number_of_results);
     }
 
+
+    virtual bool
+    IncrementalFindPhantomPoiNodeForCoordinate(const FixedPointCoordinate &input_coordinate,
+                                           std::vector<PhantomNode> &resulting_phantom_node_vector,
+                                           const unsigned zoom_level,
+                                           const unsigned number_of_results)
+    {
+        if (!m_static_rtree.get() || CURRENT_TIMESTAMP != m_static_rtree->first)
+        {
+            LoadRTree();
+        }
+    
+        return m_static_rtree->second->IncrementalFindPhantomPoiNodeForCoordinate(
+                                                                           input_coordinate, resulting_phantom_node_vector, zoom_level, number_of_results);
+    
+    }
+
     unsigned GetCheckSum() const final { return m_check_sum; }
 
     unsigned GetNameIndexFromEdgeID(const unsigned id) const final
