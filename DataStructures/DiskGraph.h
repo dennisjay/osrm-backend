@@ -122,8 +122,8 @@ template <typename EdgeDataT> class DiskGraph
     DiskGraph(stxxl::vector<NodeArrayEntry> &nodes,
                 stxxl::vector<EdgeArrayEntry> &edges)
     {
-        number_of_nodes = stxxl::vector<NodeArrayEntry>(number_of_nodes)>(nodes.size() - 1);
-        number_of_edges = stxxl::vector<EdgeArrayEntry>(number_of_edges)>(edges.size());
+        number_of_nodes = nodes.size() - 1;
+        number_of_edges = edges.size();
 
         node_array.swap(nodes);
         edge_array.swap(edges);

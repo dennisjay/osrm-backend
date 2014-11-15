@@ -103,12 +103,13 @@ template <class EdgeDataT> class InternalDataFacade : public BaseDataFacade<Edge
 
     void LoadGraph(const boost::filesystem::path &hsgr_path)
     {
-        typename ShM<typename QueryGraph::NodeArrayEntry, false>::vector node_list;
-        typename ShM<typename QueryGraph::EdgeArrayEntry, false>::vector edge_list;
+        std::vector<typename QueryGraph::NodeArrayEntry> node_list;
+        std::vector<typename QueryGraph::EdgeArrayEntry> edge_list;
 
         SimpleLogger().Write() << "loading graph from " << hsgr_path.string();
 
-        m_number_of_nodes = readHSGRFromStream(hsgr_path, node_list, edge_list, &m_check_sum);
+        m_number_of_nodes = readHSGRFromStream<typename QueryGraph::NodeArrayEntry,typename QueryGraph::EdgeArrayEntry>
+        (hsgr_path, node_list, edge_list, &m_check_sum);
 
         BOOST_ASSERT_MSG(0 != node_list.size(), "node list empty");
         // BOOST_ASSERT_MSG(0 != edge_list.size(), "edge list empty");

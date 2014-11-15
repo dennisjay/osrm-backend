@@ -373,10 +373,10 @@ NodeID readBinaryOSRMGraphFromStream(std::istream &input_stream,
 }
 
 
-template <typename NodeT, typename EdgeT>
+template <typename NodeT, typename EdgeT, typename NodeListT = std::vector<NodeT>, typename EdgeListT = std::vector<EdgeT>>
 unsigned readHSGRFromStream(const boost::filesystem::path &hsgr_file,
-                            std::vector<NodeT> &node_list,
-                            std::vector<EdgeT> &edge_list,
+                            NodeListT &node_list,
+                            EdgeListT &edge_list,
                             unsigned *check_sum)
 {
     if (!boost::filesystem::exists(hsgr_file))

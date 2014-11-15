@@ -70,7 +70,7 @@ OSRM_impl::OSRM_impl(ServerPaths server_paths, const bool use_shared_memory)
     {
         // populate base path
         populate_base_path(server_paths);
-        query_data_facade = new InternalDataFacade<QueryEdge::EdgeData>(server_paths);
+        query_data_facade = new SlimDataFacade<QueryEdge::EdgeData>(server_paths);
     }
 
     // The following plugins handle all requests.

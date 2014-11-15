@@ -52,15 +52,15 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
 
   private:
     typedef BaseDataFacade<EdgeDataT> super;
-    typedef DiskGraph<typename super::EdgeData> QueryGraph;
-    typedef typename QueryGraph::InputEdge InputEdge;
+    typedef DiskGraph<typename super::EdgeData> DiskGraph;
+    typedef typename DiskGraph::InputEdge InputEdge;
     typedef typename super::RTreeLeaf RTreeLeaf;
 
     SlimDataFacade() {}
 
     unsigned m_check_sum;
     unsigned m_number_of_nodes;
-    QueryGraph *m_query_graph;
+    DiskGraph *m_query_graph;
     std::string m_timestamp;
 
     std::shared_ptr<stxxl::vector<FixedPointCoordinate>> m_coordinate_list;
@@ -104,18 +104,19 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
 
     void LoadGraph(const boost::filesystem::path &hsgr_path)
     {
-        typename ShM<typename QueryGraph::NodeArrayEntry, false>::vector node_list;
-        typename ShM<typename QueryGraph::EdgeArrayEntry, false>::vector edge_list;
+        stxxl::vector<typename DiskGraph::NodeArrayEntry> node_list;
+        stxxl::vector<typename DiskGraph::EdgeArrayEntry> edge_list;
 
         SimpleLogger().Write() << "loading graph from " << hsgr_path.string();
 
-        m_number_of_nodes = readHSGRFromStream(hsgr_path, node_list, edge_list, &m_check_sum);
+        m_number_of_nodes = readHSGRFromStream<typename DiskGraph::NodeArrayEntry,typename DiskGraph::EdgeArrayEntry, typename stxxl::vector<typename DiskGraph::NodeArrayEntry>, typename  stxxl::vector<typename DiskGraph::EdgeArrayEntry> >
+            (hsgr_path, node_list, edge_list, &m_check_sum);
 
         BOOST_ASSERT_MSG(0 != node_list.size(), "node list empty");
         // BOOST_ASSERT_MSG(0 != edge_list.size(), "edge list empty");
         SimpleLogger().Write() << "loaded " << node_list.size() << " nodes and " << edge_list.size()
                                << " edges";
-        m_query_graph = new QueryGraph(node_list, edge_list);
+        m_query_graph = new DiskGraph(node_list, edge_list);
 
         BOOST_ASSERT_MSG(0 == node_list.size(), "node list not flushed");
         BOOST_ASSERT_MSG(0 == edge_list.size(), "edge list not flushed");
