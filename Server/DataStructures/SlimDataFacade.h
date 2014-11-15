@@ -353,16 +353,16 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
         return m_coordinate_list->at(id);
     };
 
-    bool EdgeIsCompressed(const unsigned id) const { return m_edge_is_compressed.at(id); }
+    bool EdgeIsCompressed(const unsigned id) const { return m_edge_is_compressed[id]; }
 
     TurnInstruction GetTurnInstructionForEdgeID(const unsigned id) const final
     {
-        return m_turn_instruction_list.at(id);
+        return m_turn_instruction_list[id];
     }
 
     TravelMode GetTravelModeForEdgeID(const unsigned id) const
     {
-      return m_travel_mode_list.at(id);
+      return m_travel_mode_list[id];
     }
 
     bool LocateClosestEndPointForCoordinate(const FixedPointCoordinate &input_coordinate,
@@ -410,7 +410,7 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
 
     unsigned GetNameIndexFromEdgeID(const unsigned id) const final
     {
-        return m_name_ID_list.at(id);
+        return m_name_ID_list[id];
     };
 
     void GetName(const unsigned name_id, std::string &result) const final
@@ -434,14 +434,14 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
 
     virtual unsigned GetGeometryIndexForEdgeID(const unsigned id) const final
     {
-        return m_via_node_list.at(id);
+        return m_via_node_list[id];
     }
 
     virtual void GetUncompressedGeometry(const unsigned id,
                                          std::vector<unsigned> &result_nodes) const final
     {
-        const unsigned begin = m_geometry_indices.at(id);
-        const unsigned end = m_geometry_indices.at(id + 1);
+        const unsigned begin = m_geometry_indices[id];
+        const unsigned end = m_geometry_indices[id + 1];
 
         result_nodes.clear();
         result_nodes.insert(
