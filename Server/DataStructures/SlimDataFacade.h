@@ -135,9 +135,9 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
         for (unsigned i = 0; i < number_of_coordinates; ++i)
         {
             nodes_input_stream.read((char *)&current_node, sizeof(NodeInfo));
-            m_coordinate_list->at(i) = FixedPointCoordinate(current_node.lat, current_node.lon);
-            BOOST_ASSERT((std::abs(m_coordinate_list->at(i).lat) >> 30) == 0);
-            BOOST_ASSERT((std::abs(m_coordinate_list->at(i).lon) >> 30) == 0);
+            (*m_coordinate_list)[i] = FixedPointCoordinate(current_node.lat, current_node.lon);
+            BOOST_ASSERT((std::abs((*m_coordinate_list)[i].lat) >> 30) == 0);
+            BOOST_ASSERT((std::abs((*m_coordinate_list)[i].lon) >> 30) == 0);
         }
         nodes_input_stream.close();
 
@@ -350,7 +350,7 @@ template <class EdgeDataT> class SlimDataFacade : public BaseDataFacade<EdgeData
     // node and edge information access
     FixedPointCoordinate GetCoordinateOfNode(const unsigned id) const final
     {
-        return m_coordinate_list->at(id);
+        return (*m_coordinate_list)[id];
     };
 
     bool EdgeIsCompressed(const unsigned id) const { return m_edge_is_compressed[id]; }
