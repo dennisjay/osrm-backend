@@ -146,12 +146,12 @@ template <typename EdgeDataT> class DiskGraph
 
     EdgeIterator BeginEdges(const NodeIterator n) const
     {
-        return EdgeIterator(node_array.at(n).first_edge);
+        return EdgeIterator(node_array[n].first_edge);
     }
 
     EdgeIterator EndEdges(const NodeIterator n) const
     {
-        return EdgeIterator(node_array.at(n + 1).first_edge);
+        return EdgeIterator(node_array[n + 1].first_edge);
     }
 
     // searches for a specific edge

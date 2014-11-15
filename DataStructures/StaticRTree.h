@@ -606,27 +606,27 @@ class StaticRTree
                             FixedPointCoordinate::ApproximateEuclideanDistance(
                                 input_coordinate.lat,
                                 input_coordinate.lon,
-                                m_coordinate_list->at(current_edge.u).lat,
-                                m_coordinate_list->at(current_edge.u).lon);
+                                (*m_coordinate_list)[current_edge.u].lat,
+                                (*m_coordinate_list)[current_edge.u].lon);
                         if (current_minimum_distance < min_dist)
                         {
                             // found a new minimum
                             min_dist = current_minimum_distance;
-                            result_coordinate = m_coordinate_list->at(current_edge.u);
+                            result_coordinate = (*m_coordinate_list)[current_edge.u];
                         }
 
                         current_minimum_distance =
                             FixedPointCoordinate::ApproximateEuclideanDistance(
                                 input_coordinate.lat,
                                 input_coordinate.lon,
-                                m_coordinate_list->at(current_edge.v).lat,
-                                m_coordinate_list->at(current_edge.v).lon);
+                                (*m_coordinate_list)[current_edge.v].lat,
+                                (*m_coordinate_list)[current_edge.v].lon);
 
                         if (current_minimum_distance < min_dist)
                         {
                             // found a new minimum
                             min_dist = current_minimum_distance;
-                            result_coordinate = m_coordinate_list->at(current_edge.v);
+                            result_coordinate = (*m_coordinate_list)[current_edge.v];
                         }
                     }
                 }
@@ -705,8 +705,8 @@ class StaticRTree
                         const auto &current_edge = current_leaf_node.objects[i];
                         const float current_perpendicular_distance =
                             FixedPointCoordinate::ComputePerpendicularDistance(
-                                m_coordinate_list->at(current_edge.u),
-                                m_coordinate_list->at(current_edge.v),
+                                (*m_coordinate_list)[current_edge.u],
+                                (*m_coordinate_list)[current_edge.v],
                                 input_coordinate);
                         // distance must be non-negative
                         BOOST_ASSERT(0. <= current_perpendicular_distance);
@@ -779,8 +779,8 @@ class StaticRTree
                 FixedPointCoordinate foot_point_coordinate_on_segment;
                 const float current_perpendicular_distance =
                     FixedPointCoordinate::ComputePerpendicularDistance(
-                        m_coordinate_list->at(current_segment.u),
-                        m_coordinate_list->at(current_segment.v),
+                        (*m_coordinate_list)[current_segment.u],
+                        (*m_coordinate_list)[current_segment.v],
                         input_coordinate,
                         foot_point_coordinate_on_segment,
                         current_ratio);
@@ -901,8 +901,8 @@ class StaticRTree
                         const auto &current_edge = current_leaf_node.objects[i];
                         const float current_perpendicular_distance =
                             FixedPointCoordinate::ComputePerpendicularDistance(
-                                m_coordinate_list->at(current_edge.u),
-                                m_coordinate_list->at(current_edge.v),
+                                (*m_coordinate_list)[current_edge.u],
+                                (*m_coordinate_list)[current_edge.v],
                                 input_coordinate);
                         // distance must be non-negative
                         BOOST_ASSERT(0. <= current_perpendicular_distance);
@@ -958,8 +958,8 @@ class StaticRTree
                 FixedPointCoordinate foot_point_coordinate_on_segment;
                 const float current_perpendicular_distance =
                     FixedPointCoordinate::ComputePerpendicularDistance(
-                        m_coordinate_list->at(current_segment.u),
-                        m_coordinate_list->at(current_segment.v),
+                        (*m_coordinate_list)[current_segment.u],
+                        (*m_coordinate_list)[current_segment.v],
                         input_coordinate,
                         foot_point_coordinate_on_segment,
                         current_ratio);
@@ -1058,8 +1058,8 @@ class StaticRTree
                         FixedPointCoordinate nearest;
                         const float current_perpendicular_distance =
                             FixedPointCoordinate::ComputePerpendicularDistance(
-                                m_coordinate_list->at(current_edge.u),
-                                m_coordinate_list->at(current_edge.v),
+                                (*m_coordinate_list)[current_edge.u],
+                                (*m_coordinate_list)[current_edge.v],
                                 input_coordinate,
                                 nearest,
                                 current_ratio);
@@ -1114,9 +1114,9 @@ class StaticRTree
                                                          PhantomNode &result_phantom_node) const
     {
         const float distance_1 = FixedPointCoordinate::ApproximateEuclideanDistance(
-            m_coordinate_list->at(nearest_edge.u), result_phantom_node.location);
+            (*m_coordinate_list)[nearest_edge.u], result_phantom_node.location);
         const float distance_2 = FixedPointCoordinate::ApproximateEuclideanDistance(
-            m_coordinate_list->at(nearest_edge.u), m_coordinate_list->at(nearest_edge.v));
+            (*m_coordinate_list)[nearest_edge.u], (*m_coordinate_list)[nearest_edge.v]);
         const float ratio = std::min(1.f, distance_1 / distance_2);
 
         if (SPECIAL_NODEID != result_phantom_node.forward_node_id)
