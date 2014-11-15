@@ -36,6 +36,7 @@ Thumbs.db
 # build related files #
 #######################
 /build/
+/build-release/
 /Util/FingerPrint.cpp
 /Util/GitDescription.cpp
 /cmake/postinst

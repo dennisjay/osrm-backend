@@ -42,6 +42,7 @@ namespace boost { namespace interprocess { class named_mutex; } }
 #include "../Plugins/TimestampPlugin.h"
 #include "../Plugins/ViaRoutePlugin.h"
 #include "../Server/DataStructures/BaseDataFacade.h"
+#include "../Server/DataStructures/SlimDataFacade.h"
 #include "../Server/DataStructures/InternalDataFacade.h"
 #include "../Server/DataStructures/SharedBarriers.h"
 #include "../Server/DataStructures/SharedDataFacade.h"
